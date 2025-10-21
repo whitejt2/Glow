@@ -1,15 +1,23 @@
+// manifest.json
 {
   "name": "Glow Routine — Weekly Skincare Calendar",
   "short_name": "Glow Routine",
-  "description": "Monk 7–8 SOC-safe, mobile-first weekly AM/PM skincare calendar with archive and course manager.",
-  "lang": "en",
-  "start_url": "index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a",
+  "description": "Mobile-first, SOC-safe weekly skincare calendar with local archive and PWA support.",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
