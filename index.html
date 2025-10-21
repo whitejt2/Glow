@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Glow Routine — Weekly Skincare Calendar (PWA)</title>
+
+  <!-- Theme color (status bar color on mobile) -->
+  <meta name="theme-color" content="#0a0a0a"/>
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="manifest.json"/>
+
+  <!-- Fallback icons (favicons) -->
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Fonts & your existing CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Keep your existing styles here (from the previous version). */
+  </style>
+</head>
+<body>
+  <!-- Keep your existing HTML content here (header, calendar, guidance, archive, etc.). -->
+
+  <!-- Your existing scripts here (calendar logic, localStorage, course manager, etc.). -->
+
+  <!-- PWA: Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service worker registered:', reg.scope))
+          .catch(err => console.error('Service worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
