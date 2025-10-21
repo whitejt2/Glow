@@ -1,0 +1,179 @@
+/* ===== Embedded Futuristic Display Font (Orbitron subset) ===== */
+@font-face{
+  font-family:'OrbitronEmbedded';
+  font-style:normal; font-weight:700;
+  src:url(data:font/woff2;base64,d09GMgABAAAAAAv3ABAAAAAAE0gAAAIgAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlYXYAAABWAAAARAAAAGkA+q2kG1heHAAABbAAAABkAAAAvrV3x3GhlYWQAAAdkAAAANAAAAGI0KQpPaGhlYQAAB5AAAAAUAAAAKJYfC2hoZWYAAAgUAAAAEAAAACaY4QsnbG9jYQAACGAAAAAfAAAAQFQ4l6ptYXhwAAAJGAAAADAAAAA3Wl7zLm5hbWUAAAkwAAAANQAAAGQ7c7JfcG9zdAAACpAAAABWAAAAeK2sQOVY2FzcAAAClgAAAAEAAAABAAAACAAAAAA) format('woff2');
+  font-display:swap;
+}
+
+/* ===== Chrome Theme Tokens ===== */
+:root{
+  /* Reflective dark base (no blur/glass) */
+  --bg-dark-1:#0d1116; --bg-dark-2:#11161c; --bg-dark-3:#0b0f14;
+  --text:#eef2f6; --text-dim:#bfc7d2;
+  /* Chrome gradients & accents */
+  --chrome-1:#f8fbff; --chrome-2:#e3e7ec; --chrome-3:#cbd2d9; --chrome-4:#9fa6ad; --chrome-5:#7b838b;
+  --cyan:#6af0ff; --violet:#c29cff; --white:#ffffff;
+  /* Structure */
+  --radius:12px; --shadow:0 24px 60px rgba(0,0,0,.55);
+  --hairline:1px solid rgba(255,255,255,.12);
+  --thin:1px solid rgba(255,255,255,.18);
+  --gap:10px;
+}
+
+/* ===== Base ===== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text);
+  font:16px/1.5 Inter, "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  background:
+    linear-gradient(180deg, var(--bg-dark-1), var(--bg-dark-2) 55%, var(--bg-dark-3)),
+    linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,0) 40%),
+    linear-gradient(270deg, rgba(255,255,255,.06), rgba(255,255,255,0) 40%);
+  background-blend-mode:overlay, normal, normal;
+}
+a{color:var(--cyan); text-decoration:none}
+a:focus,button:focus,input:focus,select:focus{outline:none; box-shadow:0 0 0 3px rgba(106,240,255,.35), 0 0 0 1px var(--cyan); border-radius:8px}
+.container{max-width:1800px; margin:18px auto; padding:0 18px}
+
+/* ===== Navigation (chrome, no glass) ===== */
+.nav{
+  position:sticky; top:0; z-index:30;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06)),
+    linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,.00));
+  border-bottom:var(--hairline);
+}
+.nav-inner{display:flex; align-items:center; gap:8px; padding:10px 16px}
+.brand{
+  font-family:'OrbitronEmbedded', Inter, system-ui; font-weight:700; letter-spacing:1px;
+  background:linear-gradient(90deg,#fff,#e3e9f0,#cbd2d9,#aab2bb);
+  -webkit-background-clip:text; background-clip:text; color:transparent; 
+  font-size:18px; text-transform:uppercase;
+}
+.spacer{flex:1}
+
+/* ===== Chrome Buttons ===== */
+.btn{
+  appearance:none; border:0; cursor:pointer; padding:8px 14px; border-radius:10px;
+  color:#0b0f14; font-weight:700; letter-spacing:.3px;
+}
+.btn-chrome{
+  background:
+    radial-gradient(120% 80% at 50% -20%, rgba(255,255,255,0.95), transparent 65%),
+    linear-gradient(180deg, var(--chrome-1), var(--chrome-2) 55%, var(--chrome-3));
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.95);
+}
+.btn-ghost{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
+  border:var(--thin);
+  color:var(--text);
+}
+.btn:hover{
+  box-shadow:
+    0 18px 44px rgba(0,0,0,.55),
+    0 0 14px rgba(106,240,255,.28),
+    0 0 10px rgba(194,156,255,.22),
+    inset 0 1px 0 rgba(255,255,255,.98);
+  filter:contrast(1.05) saturate(1.08);
+}
+.btn:active{transform:translateY(1px)}
+.btn-small{padding:6px 10px; border-radius:8px; font-size:13px}
+
+/* Tabs (sharp chrome pill toggles) */
+.tabs{display:flex; gap:8px}
+.tab{
+  font-family:'OrbitronEmbedded', Inter, system-ui; text-transform:uppercase; letter-spacing:.6px;
+  padding:6px 10px; border-radius:999px; border:var(--thin);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,.10));
+  color:var(--text); cursor:pointer; user-select:none; font-weight:700; font-size:12px;
+}
+.tab[aria-selected="true"]{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.90), rgba(255,255,255,.70));
+  color:#0b0f14; border-color:rgba(255,255,255,.85);
+}
+
+/* Panels (crisp chrome borders, no blur) */
+.panel{
+  border:var(--hairline); border-radius:var(--radius);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+  box-shadow:var(--shadow);
+  padding:12px; margin-bottom:12px;
+}
+.panel h2, .panel h3{
+  font-family:'OrbitronEmbedded', Inter, system-ui; text-transform:uppercase; letter-spacing:.8px;
+  margin:0 0 8px; font-size:16px;
+}
+.muted{color:var(--text-dim); font-size:13px}
+.small{font-size:12px; color:var(--text-dim)}
+.tight{margin:0; padding-left:18px}
+.tight li{margin:4px 0}
+
+/* Day controls */
+.row{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.date-input{
+  padding:6px 10px; border-radius:8px; border:var(--thin);
+  background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  color:var(--text)
+}
+.hint{color:var(--text-dim); font-size:12px}
+
+/* Full-width calendar (AM/PM) */
+.calendar{display:grid; gap:var(--gap); grid-template-columns: 1fr 1fr}
+.block{display:flex; flex-direction:column; gap:6px}
+.block-header{display:flex; align-items:baseline; justify-content:space-between}
+
+/* Checklist items — thin separators, chrome hover */
+.list{display:grid; gap:4px}
+.item{
+  display:flex; gap:8px; align-items:center; padding:8px 10px; border-radius:8px;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+  border-top:var(--thin);
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.item:hover{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+  box-shadow:0 0 0 1px rgba(255,255,255,.18), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.item input[type="checkbox"]{transform:scale(1.1)}
+
+/* Week View (dense cards) */
+.week-strip{display:grid; gap:8px; grid-template-columns: repeat(7, 1fr)}
+.day-card{
+  border:var(--hairline); border-radius:10px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
+  padding:8px; display:flex; flex-direction:column; gap:6px;
+}
+.day-card h4{margin:0; font-size:12px; color:var(--text-dim); font-family:'OrbitronEmbedded'}
+.day-cell{display:grid; gap:4px}
+
+/* Side panels grid (filled) */
+.grid{
+  display:grid; gap:var(--gap);
+  grid-template-columns: repeat(3, 1fr);
+}
+@media(max-width:1200px){ .grid{grid-template-columns:1fr 1fr} }
+@media(max-width:800px){ .grid{grid-template-columns:1fr} }
+
+/* Footer */
+.footer{color:var(--text-dim); font-size:12px; padding:10px 18px 40px}
+
+/* Print (A4/Letter) */
+@media print{
+  body{background:#fff; color:#111}
+  .nav, .btn, .tabs, .no-print, .actions{display:none !important}
+  .container{max-width:100%; margin:0; padding:0}
+  .panel{background:#fff; border:1px solid #333; box-shadow:none}
+  .calendar{grid-template-columns:1fr 1fr}
+  .week-strip{grid-template-columns:repeat(7,1fr)}
+  a{color:#000; text-decoration:underline}
+}

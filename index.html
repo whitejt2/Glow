@@ -1,802 +1,175 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Glow Routine — Weekly Skincare Calendar (PWA)</title>
-    <meta name="theme-color" content="#0a0a0a" />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{Glass}} Chrome Skincare Calendar</title>
+  <meta name="color-scheme" content="dark light" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Top Navigation -->
+  <header class="nav" role="navigation" aria-label="Top">
+    <div class="nav-inner">
+      <div class="brand">{{Glass}}</div>
 
-    <!-- Web App Manifest & Icons -->
-    <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="icons/icon-192.png" type="image/png" />
-    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+      <div class="tabs" role="tablist" aria-label="Mode">
+        <button id="tab-day" class="tab" role="tab" aria-controls="panel-day" aria-selected="true">Day</button>
+        <button id="tab-week" class="tab" role="tab" aria-controls="panel-week" aria-selected="false">Week</button>
+      </div>
 
-    <!-- Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
+      <div class="tabs" role="tablist" aria-label="Period">
+        <button id="tab-am" class="tab" role="tab" aria-controls="am-block" aria-selected="true">AM</button>
+        <button id="tab-pm" class="tab" role="tab" aria-controls="pm-block" aria-selected="false">PM</button>
+      </div>
 
-    <!-- Styles -->
-    <style>
-      :root {
-        --bg: #0a0a0a;
-        --surface: #111316;
-        --card: #121417;
-        --text: #eaeef3;
-        --muted: #b9c1cb;
-        --accent: #2aa9ff;
-        --accent-2: #c5a15c;
-        --accent-3: #6c7cff;
-        --ok: #3ecf8e;
-        --warn: #ffb020;
-        --danger: #ff5f5f;
-        --grid: #1c1f24;
-        --chrome: #d8dbde; /* requested chrome accent */
-        --glass: rgba(255, 255, 255, 0.06);
-        --glass-strong: rgba(255, 255, 255, 0.12);
-        --blue: #58a6ff;
-        --purple: #b07aff;
-      }
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" id="btn-products" title="Products">Products</button>
+      <button class="btn btn-ghost" id="btn-courses" title="Courses">Courses</button>
+      <button class="btn btn-ghost" id="btn-weeks" title="Weeks">Weeks</button>
+      <button class="btn btn-chrome" id="btn-print" title="Print">Print</button>
+      <button class="btn btn-ghost" id="btn-export" title="Export">Export</button>
+      <label class="btn btn-ghost" for="importFile" title="Import" style="cursor:pointer">Import</label>
+      <input id="importFile" type="file" accept="application/json" hidden />
+    </div>
+  </header>
 
-      * { box-sizing: border-box; }
-      html, body {
-        margin: 0;
-        padding: 0;
-        background: radial-gradient(1000px 500px at 50% -200px, #0f1220 0%, #0a0a0a 50%, #070708 100%);
-        color: var(--text);
-        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        scroll-behavior: smooth; /* smooth scrolling */
-      }
+  <!-- Main Layout -->
+  <main class="container">
+    <!-- Day Panel -->
+    <section id="panel-day" class="panel" role="tabpanel" aria-labelledby="tab-day">
+      <div class="row">
+        <label class="date-label">
+          Date
+          <input type="date" id="datePicker" class="date-input" />
+        </label>
+        <div class="hint">Checks persist per day; AM/PM auto-selects based on current time.</div>
+      </div>
 
-      a { color: var(--accent); }
-
-      /* Subtle global reflection glow */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: -20% -20% auto -20%;
-        height: 40vh;
-        pointer-events: none;
-        background:
-          radial-gradient(60% 120% at 80% 0%, rgba(88,166,255,0.20) 0%, transparent 60%),
-          radial-gradient(60% 120% at 20% 0%, rgba(176,122,255,0.18) 0%, transparent 60%);
-        filter: blur(40px);
-        opacity: 0.6;
-      }
-
-      header {
-        padding: 16px 12px;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-        backdrop-filter: saturate(130%) blur(10px);
-        -webkit-backdrop-filter: saturate(130%) blur(10px);
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        border-bottom: 1px solid var(--chrome);
-      }
-
-      header h1 { margin: 0; font-size: 20px; letter-spacing: 0.2px; }
-      header .sub { font-size: 12px; color: var(--muted); }
-
-      main { max-width: 960px; margin: 0 auto; padding: 12px; }
-
-      /* Card base with iPhone-like softened edges */
-      section.card {
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%),
-          var(--card);
-        border: 1px solid rgba(216,219,222,0.35);
-        border-radius: 18px;
-        margin: 12px 0;
-        padding: 12px;
-        box-shadow:
-          inset 0 1px rgba(255,255,255,0.06),
-          0 8px 18px rgba(0,0,0,0.35),
-          0 1px 0 rgba(216,219,222,0.15);
-      }
-
-      section.card h2 { margin: 0 0 8px 0; font-size: 16px; }
-
-      /* Glass-like buttons with centered text */
-      button, .btn {
-        appearance: none;
-        -webkit-appearance: none;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%),
-          radial-gradient(120% 200% at 30% 0%, rgba(88,166,255,0.35) 0%, transparent 50%),
-          radial-gradient(120% 200% at 70% 0%, rgba(176,122,255,0.30) 0%, transparent 50%),
-          var(--surface);
-        color: var(--text);
-        border: 1px solid var(--chrome);
-        border-radius: 13px;
-        padding: 10px 14px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center; /* centered text on mobile + desktop */
-        text-align: center;
-        font-weight: 600;
-        letter-spacing: 0.2px;
-        box-shadow:
-          inset 0 1px rgba(255,255,255,0.25),
-          0 6px 14px rgba(0,0,0,0.35);
-        transition: transform 160ms ease, box-shadow 180ms ease, background 250ms ease, opacity 200ms ease;
-      }
-      button:hover, .btn:hover { transform: translateY(-1px); box-shadow: inset 0 1px rgba(255,255,255,0.25), 0 10px 20px rgba(0,0,0,0.45); }
-      button:active, .btn:active { transform: translateY(0); }
-      button:disabled { opacity: .6; cursor: not-allowed; }
-
-      /* Accent variants */
-      button.primary {
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 100%),
-          linear-gradient(90deg, #58a6ff 0%, #6c7cff 100%);
-        color: #04101a;
-        border-color: rgba(216,219,222,0.65);
-      }
-      button.warn {
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%),
-          linear-gradient(90deg, #ffd46b 0%, #ffb020 100%);
-        color: #1e1200;
-        border-color: rgba(216,219,222,0.65);
-      }
-      button.danger {
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%),
-          linear-gradient(90deg, #ff8686 0%, #ff5f5f 100%);
-        color: #240000;
-        border-color: rgba(216,219,222,0.65);
-      }
-
-      input[type="text"], textarea, select {
-        width: 100%;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%),
-          var(--surface);
-        color: var(--text);
-        border: 1px solid rgba(216,219,222,0.35);
-        border-radius: 12px;
-        padding: 10px 12px;
-        box-shadow: inset 0 1px rgba(255,255,255,0.15);
-      }
-
-      textarea { min-height: 64px; }
-
-      .grid { display: grid; gap: 10px; }
-
-      .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
-      .legend { font-size: 12px; color: var(--muted); }
-      .note { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
-      .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-      /* Day cards layout */
-      .day-cards {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-      @media (min-width: 720px) {
-        .day-cards { grid-template-columns: 1fr 1fr; }
-      }
-      @media (min-width: 1024px) {
-        .day-cards { grid-template-columns: 1fr 1fr 1fr; }
-      }
-
-      .day-card {
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%),
-          var(--card);
-        border: 1px solid rgba(216,219,222,0.35);
-        border-radius: 18px;
-        padding: 10px;
-        box-shadow:
-          inset 0 1px rgba(255,255,255,0.06),
-          0 8px 18px rgba(0,0,0,0.35),
-          0 1px 0 rgba(216,219,222,0.15);
-        overflow: hidden;
-      }
-      .day-card.today {
-        outline: 2px solid var(--accent);
-        box-shadow:
-          inset 0 1px rgba(255,255,255,0.06),
-          0 10px 22px rgba(0,0,0,0.45),
-          0 0 0 2px rgba(42,169,255,0.25);
-      }
-      .day-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 6px 4px 10px;
-      }
-      .day-title { font-weight: 700; font-size: 16px; letter-spacing: 0.2px; }
-      .day-today { font-size: 11px; color: var(--accent); }
-
-      /* Collapsible panels */
-      .panel {
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
-          var(--surface);
-        border: 1px solid rgba(216,219,222,0.28);
-        border-radius: 14px;
-        margin: 8px 0;
-        overflow: hidden;
-        transition: border-color 200ms ease, box-shadow 200ms ease;
-      }
-      .panel:hover {
-        border-color: rgba(216,219,222,0.45);
-        box-shadow: inset 0 1px rgba(255,255,255,0.20), 0 8px 18px rgba(0,0,0,0.30);
-      }
-      .panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 10px 12px;
-        cursor: pointer;
-        user-select: none;
-      }
-      .panel-header .label {
-        font-weight: 600;
-        letter-spacing: 0.2px;
-      }
-      .chip {
-        font-size: 11px;
-        padding: 4px 8px;
-        border-radius: 999px;
-        border: 1px solid rgba(216,219,222,0.35);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 100%),
-          var(--card);
-        box-shadow: inset 0 1px rgba(255,255,255,0.25);
-      }
-      .panel-indicator {
-        width: 24px;
-        height: 24px;
-        border-radius: 8px;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.08) 100%),
-          radial-gradient(120% 200% at 30% 0%, rgba(88,166,255,0.45) 0%, transparent 50%),
-          radial-gradient(120% 200% at 70% 0%, rgba(176,122,255,0.35) 0%, transparent 50%),
-          var(--surface);
-        border: 1px solid var(--chrome);
-        box-shadow: inset 0 1px rgba(255,255,255,0.20), 0 4px 10px rgba(0,0,0,0.35);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text);
-        font-size: 14px;
-        transition: transform 160ms ease, background 250ms ease;
-      }
-      .panel.open .panel-indicator { transform: rotate(90deg); }
-
-      .panel-content {
-        max-height: 0;
-        opacity: 0;
-        transition: max-height 260ms ease, opacity 220ms ease, padding 220ms ease;
-        padding: 0 12px;
-      }
-      .panel.open .panel-content {
-        padding: 8px 12px 12px;
-        max-height: 520px; /* enough to show textarea */
-        opacity: 1;
-      }
-
-      /* Checkbox row */
-      .check-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 8px;
-      }
-      .check-row input[type="checkbox"] {
-        width: 20px; height: 20px;
-        accent-color: var(--accent);
-      }
-
-      @media print {
-        header, .no-print, .controls, .legend, .actions { display: none !important; }
-        body { background: #fff; color: #000; }
-        main { max-width: none; }
-        section.card { border: 1px solid #ccc; box-shadow: none; background: #fff; }
-        .day-card { page-break-inside: avoid; border: 1px solid #ccc; box-shadow: none; }
-        .panel { border: 1px solid #bbb; background: #fff; }
-        .panel-content { max-height: none !important; opacity: 1 !important; padding: 8px 12px 12px !important; }
-        .chip, .panel-indicator { display: none; }
-        button, .btn { display: none; }
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>Glow Routine — Weekly Skincare Calendar</h1>
-      <div class="sub">Monk 7–8 • SOC‑safe • Mobile‑first • Firefox‑friendly • PWA • Printer‑friendly</div>
-    </header>
-
-    <main>
-      <!-- Top actions -->
-      <section class="card actions no-print">
-        <div class="controls">
-          <button id="newWeek" class="primary">Start New Week</button>
-          <button id="printWeek">Print This Week</button>
-          <button id="toggleGuidance">Show/Hide Guidance</button>
-          <button id="toggleArchive">Archive / Export / Import</button>
-        </div>
-        <div class="legend">
-          • Tap AM/PM sections to expand; mark done and add notes.<br />
-          • BPO and tretinoin conflict: use clindamycin/BPO (if used) in AM, tretinoin PM.<br />
-          • HQ spot-only nightly up to 8 weeks, then ≥8 weeks off. Fluocinolone ultra-thin, 2–4 weeks typical (max 8), same spots.<br />
-          • Azelaic daily long-term (AM or PM). Tretinoin 0.05% start 2–3 nights/week → increase.<br />
-          • Prefer electric clippers/foil; avoid multi-blade close shaves to reduce PFB/PIH.
-        </div>
-      </section>
-
-      <!-- Guidance and Course Manager -->
-      <section id="guidance" class="card" hidden>
-        <h2>Guidance, Courses & Safety</h2>
-        <div class="grid">
-          <div class="card" style="padding: 8px;">
-            <h3>Shave-day adjustments</h3>
-            <ul>
-              <li>Use electric clippers (0.5–1 mm) or a sensitive foil shaver; with the grain; no skin stretching.</li>
-              <li>Skip acids on shave days. Cool rinse, light moisturizer, then face SPF (Saie). Glow Oil OK for neck/body only.</li>
-              <li>Post-shave irritation: use clindamycin; consider short-contact BPO wash if prescribed/available (1–2 min → rinse).</li>
-            </ul>
+      <!-- Full-width horizontal calendar -->
+      <div class="calendar">
+        <!-- AM -->
+        <div id="am-block" class="block" role="tabpanel" aria-labelledby="tab-am">
+          <div class="block-header">
+            <h2>AM Routine</h2>
+            <div class="muted">Monk 7–8: low‑irritation, PIH‑safe.</div>
           </div>
-
-          <div class="card" style="padding: 8px;">
-            <h3>Course Manager (HQ & Steroid)</h3>
-            <div class="two-col">
-              <div>
-                <label>Hydroquinone 4% course:</label>
-                <div class="flex">
-                  <button id="hqStart" class="primary">Start</button>
-                  <button id="hqStop" class="warn">Stop</button>
-                  <span id="hqStatus" class="note"></span>
-                </div>
-              </div>
-              <div>
-                <label>Fluocinolone 0.01% course:</label>
-                <div class="flex">
-                  <button id="fsStart" class="primary">Start</button>
-                  <button id="fsStop" class="warn">Stop</button>
-                  <span id="fsStatus" class="note"></span>
-                </div>
-              </div>
-            </div>
-            <p class="note">
-              HQ: spot-only nightly ≤8 weeks → then ≥8 weeks off. Fluocinolone: ultra-thin same spots, 2–4 weeks typical (max 8). Tretinoin 0.05% long-term, start 2–3 nights/week → increase.
-            </p>
+          <div id="am-list" class="list"></div>
+        </div>
+        <!-- PM -->
+        <div id="pm-block" class="block" role="tabpanel" aria-labelledby="tab-pm" hidden>
+          <div class="block-header">
+            <h2>PM Routine</h2>
+            <div class="muted">HQ/Fluocinolone annotate “off‑cycle” when inactive.</div>
           </div>
+          <div id="pm-list" class="list"></div>
+        </div>
+      </div>
+    </section>
 
-          <div class="card" style="padding: 8px;">
-            <h3>Skin-of-color safety (Monk 7–8)</h3>
-            <ul>
-              <li>Irritation → PIH: reduce frequency, moisturize, and pause the most irritating step when needed.</li>
-              <li>Watch for gray-blue darkening on HQ spots (rare ochronosis): stop and contact your dermatologist.</li>
-              <li>Sun protection daily: Saie on face; Glow Oil for neck/body if desired. Reapply outdoors.</li>
-            </ul>
+    <!-- Week Panel -->
+    <section id="panel-week" class="panel" role="tabpanel" aria-labelledby="tab-week" hidden>
+      <div class="block-header">
+        <h2>This Week</h2>
+        <div class="muted">Synced checks for Mon–Sun.</div>
+      </div>
+      <div id="weekStrip" class="week-strip"></div>
+    </section>
+
+    <!-- Side Panels -->
+    <section class="grid">
+      <aside id="products-panel" class="panel">
+        <h3>Products & Ingredients</h3>
+        <details open>
+          <summary><strong>Core regimen</strong></summary>
+          <ul class="tight">
+            <li>Cleanser: La Roche‑Posay (AM/PM)</li>
+            <li>Hydrator: Hada Labo Gokujyun Premium (HA)</li>
+            <li>Azelaic acid 15–20% (AM preferred during HQ course)</li>
+            <li>Clindamycin 1% roll‑on (AM; 6–12 weeks then taper)</li>
+            <li>Tretinoin 0.05% (start 2–3 nights/week → build to nightly)</li>
+            <li>Hydroquinone 4% spot‑only (≤8 weeks on → ≥8 weeks off)</li>
+            <li>Fluocinolone 0.01% (2–4 weeks only over HQ spots)</li>
+            <li>SPF: Saie tinted moisturizer (face)</li>
+          </ul>
+        </details>
+        <details>
+          <summary><strong>Optional</strong></summary>
+          <ul class="tight">
+            <li>BPO 2.5% short‑contact wash (2–4 AMs/week) to limit resistance</li>
+            <li>Niacinamide 10% + Zinc 1% (AM)</li>
+            <li>Glycolic 7% ≤1 night/week only if calm</li>
+            <li>Barrier support: ceramides, glycerin, HA</li>
+          </ul>
+        </details>
+      </aside>
+
+      <aside id="courses-panel" class="panel">
+        <h3>Course Manager</h3>
+        <div class="course">
+          <div class="row">
+            <strong>Hydroquinone 4% (spot)</strong> <span class="small">8 weeks on → 8+ weeks off</span>
+          </div>
+          <div class="row">
+            <label>Start <input type="date" id="hqStart" /></label>
+            <label>Stop <input type="date" id="hqStop" /></label>
+            <button class="btn btn-ghost btn-small" id="hqCalc">Auto 8w</button>
           </div>
         </div>
-      </section>
-
-      <!-- Weekly Calendar -->
-      <section id="calendar" class="card">
-        <h2>Weekly Calendar — Per‑Day Cards (AM / PM)</h2>
-        <div id="weekMeta" class="note"></div>
-        <div class="day-cards" id="calCards"></div>
-      </section>
-
-      <!-- Archive / Export / Import -->
-      <section id="archive" class="card" hidden>
-        <h2>Archive, Export & Import</h2>
-        <div class="controls">
-          <button id="archiveSave">Save This Week to Archive</button>
-          <button id="archiveClear" class="danger">Clear Archive</button>
-          <button id="exportAll">Export Archive (JSON)</button>
-          <label class="btn" for="importFile">Import JSON</label>
-          <input id="importFile" type="file" accept="application/json" style="display: none;" />
+        <div class="course">
+          <div class="row">
+            <strong>Fluocinolone 0.01%</strong> <span class="small">2–4 weeks only</span>
+          </div>
+          <div class="row">
+            <label>Start <input type="date" id="fluoStart" /></label>
+            <label>Stop <input type="date" id="fluoStop" /></label>
+            <button class="btn btn-ghost btn-small" id="fluoCalc">Auto 3w</button>
+          </div>
         </div>
-        <div id="archiveList" class="grid"></div>
-      </section>
-
-      <footer class="card" style="text-align: center;">
-        <small class="note">
-          Built for simple care: local-only by default. Optional free sync via Firebase is available in Settings (see code comments) but disabled by default.
-        </small>
-      </footer>
-    </main>
-
-    <!-- Scripts -->
-    <script>
-      // --- Constants & State Keys ---
-      const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const STORAGE_KEY = 'glowRoutineWeek';
-      const STORAGE_ARCHIVE_KEY = 'glowRoutineArchive';
-      const SETTINGS_KEY = 'glowRoutineSettings';
-      const COURSE_KEY = 'glowRoutineCourses';
-
-      const todayIdx = new Date().getDay();
-
-      const defaultWeek = () => ({
-        startISO: new Date().toISOString(),
-        cells: DAYS.map(d => ({ day: d, am: false, pm: false, note: '' }))
-      });
-
-      const defaultSettings = () => ({
-        firebaseEnabled: false,
-        firebase: {
-          apiKey: '', authDomain: '', projectId: '', storageBucket: '', messagingSenderId: '', appId: '', dbUrl: ''
-        }
-      });
-
-      let week = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaultWeek();
-      let archive = JSON.parse(localStorage.getItem(STORAGE_ARCHIVE_KEY) || '[]');
-      let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null') || defaultSettings();
-      let courses = JSON.parse(localStorage.getItem(COURSE_KEY) || 'null') || { hq: { active: false, start: null }, fs: { active: false, start: null } };
-
-      function saveAll() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(week));
-        localStorage.setItem(STORAGE_ARCHIVE_KEY, JSON.stringify(archive));
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-        localStorage.setItem(COURSE_KEY, JSON.stringify(courses));
-      }
-
-      // --- Rendering ---
-      const calCards = document.getElementById('calCards');
-      const weekMeta = document.getElementById('weekMeta');
-
-      function renderWeek() {
-        calCards.innerHTML = '';
-        const dt = new Date(week.startISO);
-        weekMeta.textContent = `Week starting: ${dt.toDateString()} • Sunday start • Auto‑save`;
-
-        for (let i = 0; i < DAYS.length; i++) {
-          const cell = week.cells[i];
-          const card = document.createElement('div');
-          card.className = 'day-card';
-          if (i === todayIdx) card.classList.add('today');
-
-          const head = document.createElement('div');
-          head.className = 'day-head';
-          head.innerHTML = `
-            <div>
-              <div class="day-title">${cell.day}</div>
-              ${i === todayIdx ? '<div class="day-today">Today</div>' : ''}
-            </div>
-            <div class="chip">AM: ${cell.am ? '✓' : '–'} • PM: ${cell.pm ? '✓' : '–'}</div>
-          `;
-          card.appendChild(head);
-
-          // AM panel
-          const amPanel = createPanel({
-            label: 'AM',
-            idx: i,
-            checked: cell.am,
-            noteValue: (cell.note?.split('\n')[0] || ''),
-            typeCheck: 'am',
-            typeNote: 'note-am'
-          });
-
-          // PM panel
-          const pmPanel = createPanel({
-            label: 'PM',
-            idx: i,
-            checked: cell.pm,
-            noteValue: (cell.note?.split('\n')[1] || ''),
-            typeCheck: 'pm',
-            typeNote: 'note-pm'
-          });
-
-          card.appendChild(amPanel);
-          card.appendChild(pmPanel);
-
-          calCards.appendChild(card);
-        }
-      }
-
-      function createPanel({ label, idx, checked, noteValue, typeCheck, typeNote }) {
-        const panel = document.createElement('div');
-        panel.className = 'panel';
-        const header = document.createElement('div');
-        header.className = 'panel-header';
-        header.innerHTML = `
-          <div class="label">${label}</div>
-          <div class="panel-indicator" aria-hidden="true">›</div>
-        `;
-        const content = document.createElement('div');
-        content.className = 'panel-content';
-        content.innerHTML = `
-          <div class="check-row">
-            <label class="flex" style="gap:8px;">
-              <input type="checkbox" ${checked ? 'checked' : ''} data-type="${typeCheck}" data-idx="${idx}" />
-              <span>Done</span>
+        <div class="course">
+          <div class="row">
+            <strong>Tretinoin 0.05%</strong> <span class="small">Long‑term</span>
+          </div>
+          <div class="row">
+            <label>Target nights/week
+              <select id="tretNights">
+                <option>3</option><option selected>5</option><option>7</option>
+              </select>
             </label>
-            <span class="note">Tap to mark ${label} completion.</span>
           </div>
-          <textarea placeholder="${label} notes" data-type="${typeNote}" data-idx="${idx}">${noteValue || ''}</textarea>
-        `;
+        </div>
+      </aside>
 
-        header.addEventListener('click', () => {
-          const open = panel.classList.toggle('open');
-          if (open) {
-            // ensure smooth initial expand
-            content.style.maxHeight = content.scrollHeight + 'px';
-            setTimeout(() => content.style.maxHeight = '520px', 200);
-          } else {
-            content.style.maxHeight = '0px';
-          }
-        });
+      <aside id="weeks-panel" class="panel">
+        <h3>Weekly Sheets</h3>
+        <div class="row">
+          <button class="btn btn-ghost btn-small" id="addWeek">Add current week</button>
+          <button class="btn btn-ghost btn-small" id="clearToday">Clear today</button>
+        </div>
+        <ul id="weeksList" class="small tight"></ul>
+      </aside>
+    </section>
 
-        panel.appendChild(header);
-        panel.appendChild(content);
-        return panel;
-      }
+    <!-- Notes -->
+    <section class="panel">
+      <h3>Notes for Skin of Color (Monk 7–8)</h3>
+      <ul class="tight">
+        <li>Prevent PIH: start low and slow; buffer actives; daily SPF.</li>
+        <li>Separate clindamycin (AM) from tretinoin/HQ (PM); avoid BPO and tret together on same area/time.</li>
+        <li>Shave‑safe: electric clippers/foil; avoid multi‑blade close shaves.</li>
+      </ul>
+      <div class="actions">
+        <button class="btn btn-ghost btn-small" id="btn-reminder">Add Reminder (Shortcuts)</button>
+        <button class="btn btn-ghost btn-small" id="btn-ics">Calendar (.ics)</button>
+        <span class="small">Local‑first • No tracking • Export/Import JSON</span>
+      </div>
+    </section>
+  </main>
 
-      // --- Events ---
-      document.addEventListener('change', (e) => {
-        const t = e.target;
-        const idx = parseInt(t.getAttribute('data-idx'));
-        const type = t.getAttribute('data-type');
+  <footer class="footer">
+    <div><strong>Privacy:</strong> LocalStorage only. Export/Import to move between devices (Files/iCloud Drive). No analytics.</div>
+  </footer>
 
-        if (Number.isNaN(idx) || !type) return;
-
-        if (type === 'am') {
-          week.cells[idx].am = t.checked;
-        } else if (type === 'pm') {
-          week.cells[idx].pm = t.checked;
-        } else if (type === 'note-am') {
-          const pm = week.cells[idx].note?.split('\n')[1] || '';
-          week.cells[idx].note = `${t.value}\n${pm}`.trim();
-        } else if (type === 'note-pm') {
-          const am = week.cells[idx].note?.split('\n')[0] || '';
-          week.cells[idx].note = `${am}\n${t.value}`.trim();
-        }
-
-        saveAll();
-        // Update day chip in header without full re-render:
-        const card = document.querySelectorAll('.day-card')[idx];
-        if (card) {
-          const chip = card.querySelector('.chip');
-          chip.textContent = `AM: ${week.cells[idx].am ? '✓' : '–'} • PM: ${week.cells[idx].pm ? '✓' : '–'}`;
-        }
-      });
-
-      document.getElementById('newWeek').addEventListener('click', () => {
-        archive.push(week);
-        week = defaultWeek();
-        saveAll();
-        renderWeek();
-        renderArchive();
-        alert('New week started. Previous week saved to archive.');
-      });
-
-      document.getElementById('printWeek').addEventListener('click', () => window.print());
-
-      const guidanceSec = document.getElementById('guidance');
-      document.getElementById('toggleGuidance').addEventListener('click', () => {
-        guidanceSec.hidden = !guidanceSec.hidden;
-      });
-
-      const archiveSec = document.getElementById('archive');
-      document.getElementById('toggleArchive').addEventListener('click', () => {
-        archiveSec.hidden = !archiveSec.hidden;
-        if (!archiveSec.hidden) {
-          // scroll into view with smooth scrolling
-          archiveSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-
-      document.getElementById('archiveSave').addEventListener('click', () => {
-        archive.push(week);
-        saveAll();
-        renderArchive();
-        alert('Week saved to archive.');
-      });
-
-      document.getElementById('archiveClear').addEventListener('click', () => {
-        if (confirm('Clear all archived weeks?')) {
-          archive = [];
-          saveAll();
-          renderArchive();
-        }
-      });
-
-      document.getElementById('exportAll').addEventListener('click', () => {
-        const blob = new Blob([JSON.stringify({ archive, week, courses, settings }, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'glow-routine-archive.json';
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-
-      document.getElementById('importFile').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-          try {
-            const data = JSON.parse(reader.result);
-            if (data.archive) archive = data.archive;
-            if (data.week) week = data.week;
-            if (data.courses) courses = data.courses;
-            if (data.settings) settings = data.settings;
-            saveAll();
-            renderWeek();
-            renderArchive();
-            updateCourseUI();
-            alert('Import complete.');
-          } catch (err) {
-            alert('Invalid JSON.');
-          }
-        };
-        reader.readAsText(file);
-      });
-
-      // --- Archive rendering ---
-      function renderArchive() {
-        const wrap = document.getElementById('archiveList');
-        wrap.innerHTML = '';
-        if (archive.length === 0) {
-          wrap.innerHTML = '<div class="note">No archived weeks yet.</div>';
-          return;
-        }
-        archive.forEach((w, i) => {
-          const dt = new Date(w.startISO).toDateString();
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <strong>Week ${i + 1} — ${dt}</strong>
-            <pre style="white-space: pre-wrap; font-size: 12px;">${summaryWeek(w)}</pre>
-          `;
-          wrap.appendChild(card);
-        });
-      }
-
-      function summaryWeek(w) {
-        const lines = w.cells.map(c => `${c.day}: AM ${c.am ? '✓' : '–'} | PM ${c.pm ? '✓' : '–'}${c.note ? ` | Notes: ${c.note.replace(/\n/g, ' / ')}` : ''}`);
-        return lines.join('\n');
-      }
-
-      // --- Course Manager ---
-      const hqStartBtn = document.getElementById('hqStart');
-      const hqStopBtn = document.getElementById('hqStop');
-      const hqStatus = document.getElementById('hqStatus');
-      const fsStartBtn = document.getElementById('fsStart');
-      const fsStopBtn = document.getElementById('fsStop');
-      const fsStatus = document.getElementById('fsStatus');
-
-      hqStartBtn.addEventListener('click', () => {
-        courses.hq.active = true;
-        courses.hq.start = new Date().toISOString();
-        saveAll();
-        updateCourseUI();
-      });
-
-      hqStopBtn.addEventListener('click', () => {
-        courses.hq.active = false;
-        courses.hq.start = null;
-        saveAll();
-        updateCourseUI();
-      });
-
-      fsStartBtn.addEventListener('click', () => {
-        courses.fs.active = true;
-        courses.fs.start = new Date().toISOString();
-        saveAll();
-        updateCourseUI();
-      });
-
-      fsStopBtn.addEventListener('click', () => {
-        courses.fs.active = false;
-        courses.fs.start = null;
-        saveAll();
-        updateCourseUI();
-      });
-
-      function daysSince(iso) {
-        return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-      }
-
-      function updateCourseUI() {
-        hqStatus.textContent = '';
-        fsStatus.textContent = '';
-
-        if (courses.hq.active && courses.hq.start) {
-          const d = daysSince(courses.hq.start);
-          const remain = 56 - d;
-          hqStatus.textContent = remain >= 0
-            ? `HQ active — ${d} days in (≤56). ${remain} days remaining.`
-            : `HQ exceeded 8 weeks — stop now and take ≥8 weeks break.`;
-          hqStatus.style.color = remain >= 0 ? 'var(--ok)' : 'var(--danger)';
-        } else {
-          hqStatus.textContent = 'HQ inactive. When complete, take ≥8 weeks off before any re‑course.';
-          hqStatus.style.color = 'var(--muted)';
-        }
-
-        if (courses.fs.active && courses.fs.start) {
-          const d = daysSince(courses.fs.start);
-          let msg = `Fluocinolone active — ${d} days in. Typical 14–28 days; absolute max 56.`;
-          fsStatus.textContent = msg;
-          fsStatus.style.color = d <= 28 ? 'var(--ok)' : (d <= 56 ? 'var(--warn)' : 'var(--danger)');
-        } else {
-          fsStatus.textContent = 'Fluocinolone inactive. Use ultra‑thin layer on HQ spots only, shortest time needed.';
-          fsStatus.style.color = 'var(--muted)';
-        }
-      }
-
-      // --- Optional Firebase sync (disabled by default) ---
-      async function tryFirebaseSync() {
-        if (!settings.firebaseEnabled) return;
-        try {
-          const script = document.createElement('script');
-          script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-          document.head.appendChild(script);
-          await new Promise(res => script.onload = res);
-
-          const script2 = document.createElement('script');
-          script2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
-          document.head.appendChild(script2);
-          await new Promise(res => script2.onload = res);
-
-          const app = firebase.initializeApp(settings.firebase);
-          const db = firebase.firestore(app);
-
-          const id = sessionStorage.getItem('syncId') || prompt('Enter a Sync ID (e.g., your email or a custom ID):');
-          if (!id) {
-            alert('Sync cancelled.');
-            settings.firebaseEnabled = false;
-            saveAll();
-            return;
-          }
-          sessionStorage.setItem('syncId', id);
-
-          const docRef = db.collection('glowRoutine').doc(id);
-          await docRef.set({ week, archive, courses, settings }, { merge: true });
-          const snap = await docRef.get();
-          if (snap.exists) {
-            const data = snap.data();
-            week = data.week || week;
-            archive = data.archive || archive;
-            courses = data.courses || courses;
-            settings = data.settings || settings;
-            saveAll();
-            renderWeek();
-            renderArchive();
-            updateCourseUI();
-            alert('Sync complete.');
-          }
-        } catch (e) {
-          console.error('Firebase sync error', e);
-          alert('Sync failed. App still works offline.');
-        }
-      }
-
-      // --- Init ---
-      renderWeek();
-      renderArchive();
-      updateCourseUI();
-
-      // Register Service Worker
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker
-            .register('service-worker.js')
-            .then(reg => console.log('SW registered', reg.scope))
-            .catch(err => console.error('SW failed', err));
-        });
-      }
-
-      // Optional: enable Firebase sync manually by calling tryFirebaseSync()
-      // tryFirebaseSync();
-    </script>
-  </body>
+  <script src="app.js"></script>
+</body>
 </html>
